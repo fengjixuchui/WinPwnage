@@ -1,7 +1,6 @@
 from winpwnage.core.prints import *
 from winpwnage.core.utils import *
 from winpwnage.core.winstructures import *
-import os
 
 #Creds to: https://gist.github.com/highsenburger69/09b816daa16f020d188c289fd401b0b2
 
@@ -110,3 +109,6 @@ def named_pipe_impersonation(payload):
 				print_success("Successfully elevated process PID: {}".format(lpProcessInformation.dwProcessId))
 			
 		Deleteservice()
+	else:
+		print_error("Cannot proceed, invalid payload")
+		return False		

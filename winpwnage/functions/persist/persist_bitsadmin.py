@@ -61,7 +61,7 @@ def persist_bitsadmin(payload, name="", add=True):
 			if exit_code == 0:
 				print_success("Successfully initiated job ({}) exit code ({})".format(name, exit_code))
 			else:
-				print_error("Successfully initiated job ({}) exit code ({})".format(name, exit_code))
+				print_error("Unable to initiate job ({}) exit code ({})".format(name, exit_code))
 
 			time.sleep(5)
 
@@ -70,6 +70,9 @@ def persist_bitsadmin(payload, name="", add=True):
 				print_success("Successfully started payload PID: {}".format(pid))
 			else:
 				print_error("Unable to start payload")
+		else:
+			print_error("Cannot proceed, invalid payload")
+			return False
 	else:
 		print_info("Performing cleanup")
 		exit_code = process().create("bitsadmin.exe",

